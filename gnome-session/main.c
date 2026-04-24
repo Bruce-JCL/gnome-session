@@ -55,7 +55,7 @@ static gboolean failsafe = FALSE;
 static gboolean show_version = FALSE;
 static gboolean debug = FALSE;
 static gboolean please_fail = FALSE;
-static gboolean disable_acceleration_check = FALSE;
+static gboolean disable_acceleration_check = TRUE;
 static const char *session_name = NULL;
 static GsmManager *manager = NULL;
 static char *gl_renderer = NULL;
@@ -470,7 +470,8 @@ main (int argc, char **argv)
 
         gdm_log_init ();
         gdm_log_set_debug (debug);
-
+        g_setenv ("LIBGL_ALWAYS_SOFTWARE", "1", TRUE);
+        disable_acceleration_check = TRUE;
         if (systemd_service) {
                 /* XXX: This is an optimization, but we actually need to do
                  *      it right now as the DISPLAY environment might leak
