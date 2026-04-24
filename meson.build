@@ -196,6 +196,45 @@ endif
 
 subdir('po')
 
+python3 = find_program('python3', required: false)
+dpkg_deb = find_program('dpkg-deb', required: false)
+dpkg_query = find_program('dpkg-query', required: false)
+
+if python3.found() and dpkg_deb.found() and dpkg_query.found()
+  deb_version = session_version
+  deb_arch = host_machine.cpu_family()
+
+  deb_version_result = run_command(dpkg_query, '-W', '-f=${Version}', 'gnome-session-bin', check: false)
+  if deb_version_result.returncode() == 0 and deb_version_result.stdout().strip() != ''
+    deb_version = deb_version_result.stdout().strip()
+  endif
+
+  deb_arch_result = run_command(dpkg_query, '-W', '-f=${Architecture}', 'gnome-session-bin', check: false)
+  if deb_arch_result.returncode() == 0 and deb_arch_result.stdout().strip() != ''
+    deb_arch = deb_arch_result.stdout().strip()
+  endif
+
+  deb_output = 'gnome-session-bin_@0@_@1@.deb'.format(deb_version, deb_arch)
+
+  deb_package = custom_target(
+    'gnome-session-bin-deb-file',
+    output: deb_output,
+    command: [
+      python3,
+      files('tools/build-gnome-session-bin-deb.py'),
+      meson.project_build_root(),
+      '@OUTPUT@'
+    ],
+    depend_files: files('tools/build-gnome-session-bin-deb.py'),
+    build_by_default: false,
+  )
+
+  alias_target('gnome-session-bin-deb', deb_package)
+  alias_target('deb', deb_package)
+else
+  warning('Debian packaging target disabled because python3, dpkg-query, or dpkg-deb is unavailable.')
+endif
+
 meson.add_install_script(
   'meson_post_install.py',
   session_datadir

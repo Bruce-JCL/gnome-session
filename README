@@ -28,6 +28,41 @@ gnome-session (for example, if you checked out the code from git), you
 first need to run './autogen.sh'.
 
 
+Debian packaging
+================
+
+This tree also provides a Meson target to build a gnome-session-bin
+Debian package from the current build directory.
+
+After configuring and building the project, run:
+
+   ninja -C _build gnome-session-bin-deb
+
+or:
+
+   ninja -C _build deb
+
+The generated package is written to the build directory, for example:
+
+   /root/gnome-session/_build/gnome-session-bin_42.0-1ubuntu2_arm64.deb
+
+The packaging step reuses the current build outputs, stages the runtime
+files that belong to gnome-session-bin, and then creates a .deb with
+dpkg-deb.
+
+Package metadata is copied from the currently installed gnome-session-bin
+package by querying dpkg. The Package, Source, Version, Section,
+Priority, Architecture, Maintainer, Original-Maintainer, Depends,
+Recommends, Breaks, and Description fields are reproduced from the
+installed package. Installed-Size is recalculated from the newly staged
+package contents, and the Status field is not written because it is part
+of the local dpkg database state rather than the .deb control file.
+
+This target is intended for an already built tree. If the required build
+artifacts are missing, run the normal build first and then rerun the
+packaging target.
+
+
 How to report bugs
 ==================
 
